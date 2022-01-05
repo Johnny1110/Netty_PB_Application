@@ -1,5 +1,7 @@
 package com.frizo.lab.netty.pb.app.booter;
 
+import com.frizo.lab.netty.pb.app.listener.ChannelActiveListener;
+import com.frizo.lab.netty.pb.app.listener.ProcessEndListener;
 import com.frizo.lab.netty.pb.app.handler.ServerObjectHandler;
 import com.frizo.lab.netty.pb.app.handler.ServerProtoBufInitializer;
 import com.frizo.lab.netty.pb.app.proessor.RecordReader;
@@ -21,8 +23,28 @@ public abstract class AbstractApplicationBooter implements ApplicationBooter<Pro
     }
 
     @Override
+    final public void addProcessEndListener(ProcessEndListener listener){
+        this.serverObjectHandler.addProcessEndListener(listener);
+    }
+
+    @Override
+    final public void removeProcessEndListener(ProcessEndListener listener){
+        this.serverObjectHandler.removeProcessEndListener(listener);
+    }
+
+    @Override
+    final public void addChannelActiveListener(ChannelActiveListener listener){
+        this.serverObjectHandler.addChannelActiveListener(listener);
+    }
+
+    @Override
+    final public void removeChannelActiveListener(ChannelActiveListener listener){
+        this.serverObjectHandler.removeChannelActiveListener(listener);
+    }
+
+    @Override
     public void startUp() {
-        new Thread(() ->{
+        Thread booterThread = new Thread(() ->{
             EventLoopGroup group = new NioEventLoopGroup(1);
             try{
                 ServerBootstrap bootstrap = new ServerBootstrap();
@@ -43,9 +65,14 @@ public abstract class AbstractApplicationBooter implements ApplicationBooter<Pro
                 group.shutdownGracefully();
                 System.out.println("DMServer gracefully shutdown.");
             }
-        }).start();
+        });
+
+        booterThread.setDaemon(true);
+        booterThread.setName("Application-Booter-Thread");
+        booterThread.start();
     }
 
+    // 啟動 python 客戶端
     public abstract void runClient(String remoteHostName, int remotePort);
 
     @Override

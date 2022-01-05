@@ -1,19 +1,28 @@
 package com.frizo.lab.netty.pb.app.handler;
 
+import com.frizo.lab.netty.pb.app.listener.ChannelActiveListener;
+import com.frizo.lab.netty.pb.app.listener.ProcessEndListener;
 import com.frizo.lab.netty.pb.app.proessor.RecordReader;
 import com.frizo.lab.netty.pb.app.proto.ProtoData;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class ServerObjectHandler extends SimpleChannelInboundHandler<Object> {
 
     private ChannelHandlerContext context;
 
-    private RecordReader recordReader;
+    private RecordReader<ProtoData.Record> recordReader;
 
     private volatile boolean writable = false;
+
+    private List<ProcessEndListener> endListenerList = new ArrayList<>();
+
+    private List<ChannelActiveListener> channelActiveListenerList = new ArrayList<>();
 
     public ServerObjectHandler(RecordReader recordReader) {
         this.recordReader = recordReader;
@@ -24,6 +33,11 @@ public class ServerObjectHandler extends SimpleChannelInboundHandler<Object> {
         System.out.println("connected with : " + ctx.channel().remoteAddress());
         this.writable = true;
         this.context = ctx;
+        if (!this.channelActiveListenerList.isEmpty()) {
+            this.channelActiveListenerList.forEach(listener -> {
+                listener.noticed(this);
+            });
+        }
     }
 
     @Override
@@ -32,8 +46,16 @@ public class ServerObjectHandler extends SimpleChannelInboundHandler<Object> {
         if(!record.getSignal().equals(ProtoData.Record.Signal.STOP)){
             recordReader.processRecord(record);
         }else{
+            System.out.println("reviced close signal, notice endListeners...");
+            if (!this.endListenerList.isEmpty()) {
+                this.endListenerList.forEach(listener -> {
+                    listener.noticed(ctx.channel().parent());
+                });
+            }
             System.out.println("Trying to close DMServer...");
-            ctx.channel().parent().close();
+            if (ctx.channel().parent().isActive()){
+                ctx.channel().parent().close();
+            }
         }
     }
 
@@ -53,7 +75,25 @@ public class ServerObjectHandler extends SimpleChannelInboundHandler<Object> {
 
     public void stopJob(){
         System.out.println("Trying to close client channel forcibly.");
-        this.context.channel().close().addListener(ChannelFutureListener.CLOSE);
-        this.context.channel().parent().close();
+        if(this.context!=null) {
+            this.context.channel().close().addListener(ChannelFutureListener.CLOSE);
+            this.context.channel().parent().close();
+        }
+    }
+
+    public void addProcessEndListener(ProcessEndListener listener){
+        this.endListenerList.add(listener);
+    }
+
+    public void removeProcessEndListener(ProcessEndListener listener){
+        this.endListenerList.remove(listener);
+    }
+
+    public void addChannelActiveListener(ChannelActiveListener listener){
+        this.channelActiveListenerList.add(listener);
+    }
+
+    public void removeChannelActiveListener(ChannelActiveListener listener){
+        this.channelActiveListenerList.remove(listener);
     }
 }

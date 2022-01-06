@@ -18,6 +18,8 @@ public abstract class AbstractApplicationBooter implements ApplicationBooter<Pro
 
     private ServerObjectHandler serverObjectHandler;
 
+    private EventLoopGroup group;
+
     public AbstractApplicationBooter(RecordReader recordReader){
         this.serverObjectHandler = new ServerObjectHandler(recordReader);
     }
@@ -45,7 +47,7 @@ public abstract class AbstractApplicationBooter implements ApplicationBooter<Pro
     @Override
     public void startUp() {
         Thread booterThread = new Thread(() ->{
-            EventLoopGroup group = new NioEventLoopGroup(1);
+            this.group = new NioEventLoopGroup(1);
             try{
                 ServerBootstrap bootstrap = new ServerBootstrap();
                 bootstrap.group(group)
@@ -96,6 +98,12 @@ public abstract class AbstractApplicationBooter implements ApplicationBooter<Pro
     @Override
     public void forceStopJob(){
         serverObjectHandler.stopJob();
+        this.group.shutdownGracefully();
+    }
+
+    @Override
+    public boolean isConnected(){
+        return serverObjectHandler.isWritable();
     }
 
 }

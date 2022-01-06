@@ -26,4 +26,6 @@ public interface ApplicationBooter<T> {
 
     void removeChannelActiveListener(ChannelActiveListener listener);
 
+    boolean isConnected();
+
 }

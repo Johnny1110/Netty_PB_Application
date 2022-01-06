@@ -46,23 +46,23 @@ public class ServerObjectHandler extends SimpleChannelInboundHandler<Object> {
         if(!record.getSignal().equals(ProtoData.Record.Signal.STOP)){
             recordReader.processRecord(record);
         }else{
-            System.out.println("reviced close signal, notice endListeners...");
+            System.out.println("Reviced close signal, notice endListeners...");
+            this.writable = false;
             if (!this.endListenerList.isEmpty()) {
                 this.endListenerList.forEach(listener -> {
                     listener.noticed(ctx.channel().parent());
                 });
             }
             System.out.println("Trying to close DMServer...");
-            if (ctx.channel().parent().isActive()){
-                ctx.channel().parent().close();
-            }
+            stopJob();
         }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
+        System.err.println("Connection with client encounter some problem, trying to close server...");
         cause.printStackTrace();
-        ctx.close();
+        stopJob();
     }
 
     public void sendData(ProtoData.Record record){
@@ -74,11 +74,18 @@ public class ServerObjectHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     public void stopJob(){
-        System.out.println("Trying to close client channel forcibly.");
+        this.writable = false;
         if(this.context!=null) {
-            this.context.channel().close().addListener(ChannelFutureListener.CLOSE);
+            if (context.channel().isActive()){
+                System.out.println("Trying to close client channel forcibly...");
+                this.context.channel().close().addListener(ChannelFutureListener.CLOSE);
+                System.out.println("Client channel closed successfully.");
+            }
             this.context.channel().parent().close();
+            System.out.println("Main channel closed successfully.");
+
         }
+        this.context = null;
     }
 
     public void addProcessEndListener(ProcessEndListener listener){
@@ -96,4 +103,5 @@ public class ServerObjectHandler extends SimpleChannelInboundHandler<Object> {
     public void removeChannelActiveListener(ChannelActiveListener listener){
         this.channelActiveListenerList.remove(listener);
     }
+
 }

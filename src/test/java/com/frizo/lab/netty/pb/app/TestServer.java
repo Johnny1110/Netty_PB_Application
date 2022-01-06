@@ -56,14 +56,16 @@ public class TestServer {
         pbRecordSender.addRecordToQueue(testRecord);
         pbRecordSender.addRecordToQueue(testRecord);
         pbRecordSender.addRecordToQueue(testRecord);
+        pbRecordSender.addRecordToQueue(testStopRecord);
 
-
-        //pbRecordSender.addRecordToQueue(testStopRecord);
-//        Thread.sleep(5000);
-//        booter.forceStopJob();
         while (true){
-
+            Thread.sleep(10000);
+            if (!booter.isConnected()){
+                break;
+            }
         }
+
+        booter.forceStopJob();
 
     }
 

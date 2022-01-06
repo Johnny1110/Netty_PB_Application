@@ -37,9 +37,9 @@
 
 booter package 裡面有一個介面與一個抽象類別。
 
-* interface：`ApplicationBooter`
+* interface：[`ApplicationBooter`](../../src/main/java/com/frizo/lab/netty/pb/app/booter/ApplicationBooter.java)
 
-* abstract class：`AbstractApplicationBooter`
+* abstract class：[`AbstractApplicationBooter`](../../src/main/java/com/frizo/lab/netty/pb/app/booter/AbstractApplicationBooter.java)
 
 <br>
 
@@ -64,9 +64,9 @@ booter package 裡面有一個介面與一個抽象類別。
 
 handler package 裡面有 2 個 class。
 
-* class： `ServerProtoBufInitializer`
+* class： [`ServerProtoBufInitializer`](../../src/main/java/com/frizo/lab/netty/pb/app/handler/ServerProtoBufInitializer.java)
 
-* class： `ServerObjectHandler`
+* class： [`ServerObjectHandler`](../../src/main/java/com/frizo/lab/netty/pb/app/handler/ServerObjectHandler.java)
 
 <br>
 
@@ -89,11 +89,11 @@ handler package 裡面有 2 個 class。
 
 handler package 裡面有 3 個 interface。
 
-* interface：`ApplicationListener`
+* interface：[`ApplicationListener`](../../src/main/java/com/frizo/lab/netty/pb/app/listener/ApplicationListener.java)
 
-* interface：`ChannelActiveListener`
+* interface：[`ChannelActiveListener`](../../src/main/java/com/frizo/lab/netty/pb/app/listener/ChannelActiveListener.java)
 
-* interface：`ProcessEndListener`
+* interface：[`ProcessEndListener`](../../src/main/java/com/frizo/lab/netty/pb/app/listener/ProcessEndListener.java)
 
 <br>
 
@@ -120,7 +120,7 @@ handler package 裡面有 3 個 interface。
 
 processor package 目前只有一個 interface。
 
-* interface：`RecordReader`
+* interface：[`RecordReader`](../../src/main/java/com/frizo/lab/netty/pb/app/processor/RecordReader.java)
 
 <br>
 
@@ -139,11 +139,11 @@ processor package 目前只有一個 interface。
 
 proto package 放置 protobuf 工具編譯過後的 ProtoData 文件，裡面放置一個 class。
 
-* class：`ProtoData`
+* class：[`ProtoData`](../../src/main/java/com/frizo/lab/netty/pb/app/proto/ProtoData.java)
 
 <br>
 
-ProtoData.java 是由 ProtoData.proto 文件編譯而來的。
+ProtoData.java 是由 [ProtoData.proto](../../src/main/resources/ProtoData.proto) 文件編譯而來的。
 
 
 

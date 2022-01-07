@@ -33,10 +33,14 @@
 
 <br>
 
-* [protobuf 介紹（引用 python pbsocket 文件）](https://github.com/Johnny1110/pbsocket/blob/main/doc/protobuf&varint32/README.md)
+* [protobuf 介紹（引用 python pbsocket 文件）](https://github.com/Johnny1110/pbsocket/blob/main/doc/protobuf&varint32)
 
-* [結構總結與類別介紹](./doc/structureSummary&ClassIntroduction/README.md)
+* [結構總結與類別介紹](./doc/structureSummary&ClassIntroduction)
 
-* [關於 Netty](./doc/aboutNetty/README.md)
+* [關於 Netty](./doc/aboutNetty)
+
+* [Source Code 解析](./doc/analysisSourceCode/README.md)
+
+* [Demo 演示](./doc/demo/README.md)
 
 

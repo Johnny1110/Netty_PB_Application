@@ -4,6 +4,7 @@ import com.frizo.lab.netty.pb.app.booter.ApplicationBooter;
 import com.frizo.lab.netty.pb.app.proessor.RecordReader;
 import com.frizo.lab.netty.pb.app.proto.ProtoData;
 import com.google.protobuf.ByteString;
+import io.netty.channel.ChannelFuture;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -52,6 +53,7 @@ public class TestServer {
 
     @Test
     public void testServerSocket() throws InterruptedException {
+
         booter.startUp();
         pbRecordSender.addRecordToQueue(testRecord);
         pbRecordSender.addRecordToQueue(testRecord);

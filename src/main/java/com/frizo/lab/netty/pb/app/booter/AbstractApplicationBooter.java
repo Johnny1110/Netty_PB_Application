@@ -18,10 +18,14 @@ public abstract class AbstractApplicationBooter implements ApplicationBooter<Pro
 
     private ServerObjectHandler serverObjectHandler;
 
-    private EventLoopGroup group;
+    private EventLoopGroup bossGroup;
+
+    //private EventLoopGroup workerGroup;
 
     public AbstractApplicationBooter(RecordReader recordReader){
         this.serverObjectHandler = new ServerObjectHandler(recordReader);
+        this.bossGroup = new NioEventLoopGroup(1);
+        //this.workerGroup = new NioEventLoopGroup(1);
     }
 
     @Override
@@ -47,10 +51,11 @@ public abstract class AbstractApplicationBooter implements ApplicationBooter<Pro
     @Override
     public void startUp() {
         Thread booterThread = new Thread(() ->{
-            this.group = new NioEventLoopGroup(1);
             try{
                 ServerBootstrap bootstrap = new ServerBootstrap();
-                bootstrap.group(group)
+                bootstrap
+                        //.group(bossGroup, workerGroup)
+                        .group(bossGroup)
                         .channel(NioServerSocketChannel.class)
                         .localAddress(new InetSocketAddress("127.0.0.1", 0))
                         .childHandler(new ServerProtoBufInitializer(serverObjectHandler));
@@ -64,7 +69,8 @@ public abstract class AbstractApplicationBooter implements ApplicationBooter<Pro
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                group.shutdownGracefully();
+                this.bossGroup.shutdownGracefully();
+                //this.workerGroup.shutdownGracefully();
                 System.out.println("DMServer gracefully shutdown.");
             }
         });
@@ -98,7 +104,8 @@ public abstract class AbstractApplicationBooter implements ApplicationBooter<Pro
     @Override
     public void forceStopJob(){
         serverObjectHandler.stopJob();
-        this.group.shutdownGracefully();
+        this.bossGroup.shutdownGracefully();
+        //this.workerGroup.shutdownGracefully();
     }
 
     @Override

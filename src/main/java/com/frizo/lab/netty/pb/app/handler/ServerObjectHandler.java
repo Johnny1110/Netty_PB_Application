@@ -16,16 +16,18 @@ public class ServerObjectHandler extends SimpleChannelInboundHandler<Object> {
 
     private ChannelHandlerContext context;
 
-    private RecordReader<ProtoData.Record> recordReader;
-
     private volatile boolean writable = false;
 
-    private List<ProcessEndListener> endListenerList = new ArrayList<>();
+    private RecordReader<ProtoData.Record> recordReader;
 
-    private List<ChannelActiveListener> channelActiveListenerList = new ArrayList<>();
+    private List<ProcessEndListener> endListenerList;
+
+    private List<ChannelActiveListener> channelActiveListenerList;
 
     public ServerObjectHandler(RecordReader recordReader) {
         this.recordReader = recordReader;
+        this.endListenerList = new ArrayList<>();
+        this.channelActiveListenerList = new ArrayList<>();
     }
 
     @Override
@@ -41,7 +43,7 @@ public class ServerObjectHandler extends SimpleChannelInboundHandler<Object> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+    public void channelRead0(ChannelHandlerContext ctx, Object msg) {
         ProtoData.Record record = (ProtoData.Record) msg;
         if(!record.getSignal().equals(ProtoData.Record.Signal.STOP)){
             recordReader.processRecord(record);

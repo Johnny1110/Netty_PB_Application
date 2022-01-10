@@ -29,4 +29,5 @@ public class ServerProtoBufInitializer  extends ChannelInitializer<Channel> {
         pipeline.addLast("protobufEncoder", new ProtobufEncoder());
         pipeline.addLast("messageHandler", serverObjectHandler);
     }
+
 }

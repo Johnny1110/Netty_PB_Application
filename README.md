@@ -2,8 +2,7 @@
 
 <br>
 
-使用 netty 實作一個使用 protobuf 交互資料的網路套件，可以搭配 pbsocket（python） 專案測試。
-
+使用 netty 實作一個使用 protobuf 交互資料的網路套件，可以搭配 [pbsocket（python）](https://github.com/Johnny1110/pbsocket) 專案測試。
 
 
 <br>

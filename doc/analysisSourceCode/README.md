@@ -359,18 +359,82 @@ public void removeChannelActiveListener(ChannelActiveListener listener){this.cha
 
 <br>
 
+接下來就是介紹最重要的方法回調：
+
+<br>
+
 ### `channelActive(ChannelHandlerContext ctx)`
 
+<br>
+
+這個回調方法會在 client 端有連線進來時被觸發。
+
+```java
+@Override
+public void channelActive(ChannelHandlerContext ctx) {
+    System.out.println("connected with : " + ctx.channel().remoteAddress());
+    this.writable = true;
+    this.context = ctx;
+    if (!this.channelActiveListenerList.isEmpty()) {
+        this.channelActiveListenerList.forEach(listener -> {
+            listener.noticed(this);
+        });
+    }
+}
+```
+
+
+這個回調方法看起來蠻簡單的，其實就是更新 `writable` 狀態，把 `ChannelHandlerContext` 與常量宣告標籤綁定，然後詢遍 `channelActiveListenerList`，把已註冊的 `ChannelActiveListener` 全部通知一遍。之後我門的 __"寫"__ 操作也是要在 `ChannelActiveListener` 內完成，當連線完成時開始寫入資料動作。
+
+<br>
 <br>
 
 ### `channelRead0(ChannelHandlerContext ctx, Object msg)`
 
 <br>
 
+這個回調是在有資料入站時觸發，第二個參數就是入站資料（當然，這個 `Object` 資料是已經經過前幾個 `ChannelInboundHandler`，被前幾個 Handler 處裡過後才到這邊）。
+
+```java
+@Override
+public void channelRead0(ChannelHandlerContext ctx, Object msg) {
+    ProtoData.Record record = (ProtoData.Record) msg;
+    if(!record.getSignal().equals(ProtoData.Record.Signal.STOP)){
+        recordReader.processRecord(record);
+    }else{
+        System.out.println("Reviced close signal, notice endListeners...");
+        this.writable = false;
+        if (!this.endListenerList.isEmpty()) {
+            this.endListenerList.forEach(listener -> {
+                listener.noticed(ctx.channel().parent());
+            });
+        }
+        System.out.println("Trying to close DMServer...");
+        stopJob();
+    }
+}
+```
+
+在一開始就把 msg 轉成 `ProtoData.Record` 物件，當收到非 `STOP` 訊號的資料時，交給 `recordReader` 處理後續。如果是 `STOP` 訊號則代表消息處裡結束，需要關閉應用通知所有 `ProcessEndListener` 後，執行 `stopJob()` 工作。
+
+<br>
+<br>
+
 ### `exceptionCaught(ChannelHandlerContext ctx, Throwable cause)`
 
 <br>
  
+這個回調是在發生錯誤時觸發，處理方式也很簡單：
+
+```java
+@Override
+public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
+    System.err.println("Connection with client encounter some problem, trying to close server...");
+    cause.printStackTrace();
+    stopJob();
+}
+```
+
 <br>
 <br>
 <br>
@@ -382,6 +446,24 @@ public void removeChannelActiveListener(ChannelActiveListener listener){this.cha
 
 <br>
 
+processor 這一層中只有一個介面：`RecordReader`，這個介面的實作類需要設計一下每一筆 `ProtoData.Record` 如何處理。介面 Source Code 如下：
+
+
+```java
+public interface RecordReader<T> {
+    void processRecord(T t);
+}
+```
+
+<br>
+
+最簡單的實作類如下：
+
+
+```java
+RecordReader<ProtoData.Record> reader = System.out::println;
+```
+
 <br>
 <br>
 <br>
@@ -392,6 +474,47 @@ public void removeChannelActiveListener(ChannelActiveListener listener){this.cha
 ## listener (自製監聽器類)
 
 <br>
+
+`Listener` 這一層目前只設計了 2 種，都是 interface 類型。在資料流結束時與連線激活時的 `Listener`。他們兩個都繼承自 `ApplicationListener` 介面。所以一共有 3 個 interface 在這一層中。
+
+<br>
+
+* `ApplicationListener`
+
+```java
+public interface ApplicationListener<T> {
+
+    void noticed(T t);
+}
+```
+
+<br>
+
+* `ChannelActiveListener`
+
+```java
+public interface ChannelActiveListener extends ApplicationListener<ServerObjectHandler> {
+
+}
+```
+
+<br>
+
+* `ProcessEndListener`
+
+```java
+public interface ProcessEndListener extends ApplicationListener<Channel> {
+
+}
+```
+
+<br>
+
+---
+
+<br>
+
+以上關於 Source Code 的解析都已經結束了，接下來會介紹一下如何實際使用，並與 pbsocket Client 串聯。
 
 <br>
 <br>
